@@ -14,8 +14,6 @@
 
 // Execute `rustlings hint hashmaps3` or use the `hint` watch subcommand for a hint.
 
-// I AM NOT DONE
-
 use std::collections::HashMap;
 
 // A structure to store team name and its goal details.
@@ -25,6 +23,14 @@ struct Team {
     goals_conceded: u8,
 }
 
+fn calculate_scores(scores: &HashMap<String, Team>, team_name: &String, team_1_score: &mut u8, team_2_score: &mut u8) {
+    if scores.contains_key(team_name) {
+        let team = scores.get(team_name).unwrap();
+        *team_1_score += team.goals_scored;
+        *team_2_score += team.goals_conceded;
+    }
+}
+
 fn build_scores_table(results: String) -> HashMap<String, Team> {
     // The name of the team is the key and its associated struct is the value.
     let mut scores: HashMap<String, Team> = HashMap::new();
@@ -32,14 +38,31 @@ fn build_scores_table(results: String) -> HashMap<String, Team> {
     for r in results.lines() {
         let v: Vec<&str> = r.split(',').collect();
         let team_1_name = v[0].to_string();
-        let team_1_score: u8 = v[2].parse().unwrap();
+        let mut team_1_score: u8 = v[2].parse().unwrap();
         let team_2_name = v[1].to_string();
-        let team_2_score: u8 = v[3].parse().unwrap();
+        let mut team_2_score: u8 = v[3].parse().unwrap();
+
         // TODO: Populate the scores table with details extracted from the
         // current line. Keep in mind that goals scored by team_1
         // will be number of goals conceded from team_2, and similarly
         // goals scored by team_2 will be the number of goals conceded by
         // team_1.
+
+        calculate_scores(&scores, &team_1_name, &mut team_1_score, &mut team_2_score);
+
+        calculate_scores(&scores, &team_2_name, &mut team_2_score, &mut team_1_score);
+
+        scores.insert(team_1_name.clone(), Team {
+            name: team_1_name,
+            goals_scored: team_1_score,
+            goals_conceded: team_2_score,
+        });
+
+        scores.insert(team_2_name.clone(), Team {
+            name: team_2_name,
+            goals_scored: team_2_score,
+            goals_conceded: team_1_score,
+        });
     }
     scores
 }
